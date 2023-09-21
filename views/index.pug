@@ -1,0 +1,25 @@
+extends layout
+block content
+  .container.content_container
+      h1 Syncho
+      h6 Send files to your friends (upto 10MB) for free!
+      hr
+      form(action="/submit", method="post", id='form')
+        .form-group
+          input.form-control(type="email", id="email_from", name="email", required, placeholder="Your email.")
+        
+        .form-group
+          input.form-control(type="email", id="email_to", name="email", required, placeholder="Your friend's email.")
+        
+        .form-group
+          input.form-control(type="file", id="file_input", name="file", accept=".pdf, .doc, .docx", required, style="display: none;")
+          .dropzone
+            p click or drag to select the file here
+        .progress.form-group(style="visibility:hidden", id='upload_percentage')
+          .progress-bar(style="width:0%;", role="progressbar", aria-valuenow="20", aria-valuemin="0", aria-valuemax="100")
+            | percent
+
+        div(id="message-box")
+        button.btn.btn-primary(type="submit", disabled) Send
+  script(src="/javascripts/index.js") 
+    

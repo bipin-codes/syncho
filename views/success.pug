@@ -1,0 +1,9 @@
+extends layout
+block content
+  .container.content_container
+    h1 Syncho
+    .alert-success.p-3.rounded
+        | Successfully sent your file over email. Below is the url.
+    p.my-2= url
+    button.btn.btn-primary(type="button", id="send_button") Send another file
+  script(src="/javascripts/success.js") 
