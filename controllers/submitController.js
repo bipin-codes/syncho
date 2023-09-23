@@ -1,5 +1,5 @@
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
-const { BUCKET_NAME } = require('../constants');
+const { BUCKET_NAME, TABLE_NAME } = require('../constants');
 const { getCurrentTimeInString, getKeyByFilename } = require('../utils');
 const { dynamoClient, s3Client } = require('../utils/awsClients');
 const {
@@ -53,6 +53,7 @@ module.exports = async (req, res) => {
     await dynamoClient.send(createPutItemCommand(params));
     res.status(201).json({ msg: 'Success!', data: { uploadURL, key } });
   } catch (e) {
+    console.log(e);
     let msg = 'Internal Server Error!';
     if (e.errno === -3008) {
       msg = 'There is some network issue, please try later.'; //If the server having network issue

@@ -1,5 +1,6 @@
 const { PutItemCommand, GetItemCommand } = require('@aws-sdk/client-dynamodb');
 const { PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
+const { SendEmailCommand } = require('@aws-sdk/client-ses');
 
 const createPutObjectCommand = (bucketName, key) =>
   new PutObjectCommand({ Bucket: bucketName, Key: key });
