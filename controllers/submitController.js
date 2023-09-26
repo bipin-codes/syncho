@@ -1,45 +1,32 @@
 const { getSignedUrl } = require('@aws-sdk/s3-request-presigner');
 const { BUCKET_NAME, TABLE_NAME } = require('../constants');
-const { getCurrentTimeInString, getKeyByFilename } = require('../utils');
-const { dynamoClient, s3Client } = require('../utils/awsClients');
+const {
+  getCurrentTimeInString,
+  getKeyByFilename,
+  getRandomCode,
+} = require('../utils');
+const { dynamoClient, s3Client, sesClient } = require('../utils/awsClients');
 const {
   createPutObjectCommand,
   createGetObjectCommand,
   createPutItemCommand,
+  createSendEmailCommand,
 } = require('../utils/commandBuilder');
-
-const getPresignedURLs = async (key) => {
-  const uploadURL = await getSignedUrl(
-    s3Client,
-    createPutObjectCommand(BUCKET_NAME, key),
-    {
-      expiresIn: 5 * 60, //10 minutes..
-    }
-  );
-  const downloadURL = await getSignedUrl(
-    s3Client,
-    createGetObjectCommand(BUCKET_NAME, key),
-    {
-      expiresIn: 3 * 60 * 60, //3 hours...
-    }
-  );
-  return { uploadURL, downloadURL };
-};
 
 module.exports = async (req, res) => {
   const { from, to, fileMetadata } = req.body;
 
   const createdTime = getCurrentTimeInString();
   const key = getKeyByFilename(fileMetadata.name);
-  const { uploadURL, downloadURL } = await getPresignedURLs(key);
+  const code = getRandomCode();
 
   try {
     const params = {
       TableName: TABLE_NAME,
       Item: {
         file_id: { S: key },
-        uploadURL: { S: uploadURL },
-        downloadURL: { S: downloadURL },
+        verificationCode: { S: code },
+        is_verified: { BOOL: false },
         from: { S: from },
         to: { S: to },
         meta: { S: JSON.stringify(fileMetadata) },
@@ -51,7 +38,15 @@ module.exports = async (req, res) => {
     };
 
     await dynamoClient.send(createPutItemCommand(params));
-    res.status(201).json({ msg: 'Success!', data: { uploadURL, key } });
+    await sesClient.send(
+      createSendEmailCommand(
+        [from],
+        'bipincodes@outlook.com',
+        'verification code',
+        `verification code : ${code}`
+      )
+    );
+    res.status(201).json({ msg: 'Success!', data: { key } });
   } catch (e) {
     console.log(e);
     let msg = 'Internal Server Error!';

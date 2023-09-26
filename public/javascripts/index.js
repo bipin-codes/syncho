@@ -5,6 +5,11 @@ const FORM_ID = '#form';
 const EMAIL_FROM_ID = '#email_from';
 const EMAIL_TO_ID = '#email_to';
 const UPLOAD_PROGRESSBAR = '#upload_percentage';
+const CONFIRMATION_MODAL_ID = '#confirmation-modal';
+
+const VERIFICATION_CODE_INPUT_ID = '#verification_code_input';
+const CANCEL_VERIFICATION_ID = '#cancel_verification_button';
+const VERIFY_BUTTON_ID = '#verify_button';
 
 const SIZE = 10;
 const MAX_SIZE = SIZE * 1024 * 1024; // 10MB
@@ -19,8 +24,13 @@ const toInput = document.querySelector(EMAIL_TO_ID);
 const submitButton = document.querySelector('button[type="submit"]');
 const messageBox = document.querySelector('#message-box');
 
-let selectedFile = undefined;
+const modal = document.querySelector(CONFIRMATION_MODAL_ID);
+const verifyButton = document.querySelector(VERIFY_BUTTON_ID);
+const cancelButton = document.querySelector(CANCEL_VERIFICATION_ID);
+const codeInput = document.querySelector(VERIFICATION_CODE_INPUT_ID);
 
+let selectedFile = undefined;
+let keyForFile = undefined;
 const sendRequest = async (endpoint, body) => {
   const headers = new Headers();
   headers.append('Content-Type', 'application/json');
@@ -85,6 +95,11 @@ const showHideMessage = (show, message, isError = true) => {
   messageBox.innerHTML = show ? `<p class="${msgCss}">${message}</p>` : null;
 };
 
+const showHideModal = (hide) => {
+  const style = hide ? 'display:none' : 'display:block;background: #0000002e;';
+  modal.setAttribute('style', style);
+};
+
 const fileValidation = (file) => {
   if (file.size > MAX_SIZE) {
     showHideMessage(true, `File size exceeds the ${SIZE} MB limit.`);
@@ -122,15 +137,10 @@ form.addEventListener('submit', async (event) => {
     });
 
     const {
-      data: { uploadURL, key },
+      data: { key },
     } = await submitReponse.json();
-
-    await uploadFileToUrl(uploadURL);
-
-    const ackResponse = await sendRequest('ack', { key });
-    if (ackResponse.redirected) {
-      window.location.href = ackResponse.url;
-    }
+    keyForFile = key;
+    showHideModal(false);
   } catch (e) {
     const {
       data: { cause },
@@ -171,3 +181,36 @@ fileInput.addEventListener('change', ({ target }) => {
   }
 });
 //#endregion
+
+// MODAL EVENTS
+cancelButton.addEventListener('click', () => {
+  if (window.confirm('Are you sure you want to cancel sending file?'))
+    window.location.reload();
+});
+
+verifyButton.addEventListener('click', async () => {
+  const alert = document.querySelector('#verification_alert');
+  const code = codeInput.value;
+  if (!code) {
+    alert.setAttribute('style', 'display:block');
+  } else {
+    alert.setAttribute('style', 'display:none');
+  }
+  verifyButton.setAttribute('innerText', 'Loading ...');
+
+  try {
+    const {
+      data: { uploadURL, key },
+    } = await (await sendRequest('verify', { code, key: keyForFile })).json();
+    showHideModal(true);
+
+    await uploadFileToUrl(uploadURL);
+
+    const ackResponse = await sendRequest('ack', { key });
+    if (ackResponse.redirected) {
+      window.location.href = ackResponse.url;
+    }
+  } catch (e) {
+    alert.setAttribute('style', 'display:block');
+  }
+});

@@ -1,4 +1,8 @@
-const { PutItemCommand, GetItemCommand } = require('@aws-sdk/client-dynamodb');
+const {
+  PutItemCommand,
+  GetItemCommand,
+  UpdateItemCommand,
+} = require('@aws-sdk/client-dynamodb');
 const { PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
 const { SendEmailCommand } = require('@aws-sdk/client-ses');
 
@@ -30,10 +34,30 @@ const createSendEmailCommand = (toAdresses, fromAddress, subject, body) => {
   });
 };
 
+const createUpdateItemCommand = (
+  TABLE_NAME,
+  key,
+  attributeNames,
+  attributeValues,
+  updateExpression
+) => {
+  const updateItemParams = {
+    TableName: TABLE_NAME,
+    Key: { file_id: { S: key } },
+    Key: key,
+    ExpressionAttributeNames: attributeNames,
+    ExpressionAttributeValues: attributeValues,
+    UpdateExpression: updateExpression,
+  };
+
+  return new UpdateItemCommand(updateItemParams);
+};
+
 module.exports = {
   createPutObjectCommand,
   createGetObjectCommand,
   createPutItemCommand,
   createGetItemCommand,
   createSendEmailCommand,
+  createUpdateItemCommand,
 };

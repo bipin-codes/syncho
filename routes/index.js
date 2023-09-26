@@ -9,24 +9,29 @@ const {
   acknowledgmentController,
   submitController,
   successController,
+  verificationController,
 } = require('../controllers');
+const verificationValidations = require('../validators/verification');
 
 router.get('/', indexController);
-
 router.post(
   '/submit',
   submitRequestValidations,
   processValidations,
   submitController
 );
-
+router.post(
+  '/verify',
+  verificationValidations,
+  processValidations,
+  verificationController
+);
 router.post(
   '/ack',
   acknowledgmentValidations,
   processValidations,
   acknowledgmentController
 );
-
 router.get('/success', successController);
 
 module.exports = router;
