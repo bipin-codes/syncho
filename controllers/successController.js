@@ -1,8 +1,4 @@
-module.exports = async (req, res, next) => {
+module.exports = async (req, res) => {
   const { url } = req.cookies;
-  try {
-    res.render('success', { url });
-  } catch (e) {
-    res.render('error');
-  }
+  res.render('success', { url });
 };

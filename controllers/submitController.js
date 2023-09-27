@@ -5,10 +5,8 @@ const {
   getKeyByFilename,
   getRandomCode,
 } = require('../utils');
-const { dynamoClient, s3Client, sesClient } = require('../utils/awsClients');
+const { dynamoClient, sesClient } = require('../utils/awsClients');
 const {
-  createPutObjectCommand,
-  createGetObjectCommand,
   createPutItemCommand,
   createSendEmailCommand,
 } = require('../utils/commandBuilder');
@@ -48,7 +46,6 @@ module.exports = async (req, res) => {
     );
     res.status(201).json({ msg: 'Success!', data: { key } });
   } catch (e) {
-    console.log(e);
     let msg = 'Internal Server Error!';
     if (e.errno === -3008) {
       msg = 'There is some network issue, please try later.'; //If the server having network issue

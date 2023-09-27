@@ -140,6 +140,7 @@ form.addEventListener('submit', async (event) => {
       data: { key },
     } = await submitReponse.json();
     keyForFile = key;
+    console.log(keyForFile);
     showHideModal(false);
   } catch (e) {
     const {

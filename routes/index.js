@@ -32,6 +32,16 @@ router.post(
   processValidations,
   acknowledgmentController
 );
-router.get('/success', successController);
+router.get(
+  '/success',
+  (req, res, next) => {
+    if (!req.session.redirected) {
+      return res.redirect('/');
+    }
+    delete req.session.redirected; //remove the session for users to access the success page...
+    next();
+  },
+  successController
+);
 
 module.exports = router;
