@@ -209,6 +209,8 @@ verifyButton.addEventListener('click', async () => {
 
     const ackResponse = await sendRequest('ack', { key });
     if (ackResponse.redirected) {
+      console.log('redirected!');
+      console.log(ackResponse.url);
       window.location.href = ackResponse.url;
     }
   } catch (e) {

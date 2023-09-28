@@ -53,7 +53,6 @@ module.exports = async (req, res, next) => {
         'SET #uURL = :uURL, #dURL = :dURL'
       )
     );
-    req.session.redirected = true;
     res.status(200).json({
       message: 'Verified Successfully!',
       data: { downloadURL, uploadURL, key },

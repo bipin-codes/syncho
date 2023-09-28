@@ -20,5 +20,6 @@ module.exports = async (req, res) => {
       `<a href=${downloadURL}>Download File</a>`
     )
   );
+  req.session.redirected = true;
   res.cookie('url', downloadURL).redirect(`/success`);
 };
